@@ -23,48 +23,42 @@ int valGanador(int fichasTerminadasPositivas,int fichasTerminadasNegativas);
 int hayCapturadas(int turno, int capturadaNegativa, int capturadaPositiva);
 int valDado(int numDado,int aux);
 int escogeDado(int numDado,int dado1,int dado2);
+void printInstrucciones();
 
 
 
 int main(int argc, char const *argv[]) {
   Tablero q = nuevoTablero();//tablero con sus fichas colocadas respectivamente
   int capturadaPositiva = 0, capturadaNegativa = 0;
-  int turno, turnos = 0;//par=positivas impar=negativas
+  int turno = 0, turnos = 0;//par=positivas impar=negativas
   int fichasTerminadasPositivas = 0, fichasTerminadasNegativas = 0;
-  int dados[2];
   int dado1, dado2, posIni, numDado,aux,dadoF;
-  /*printf("Dado 1:\n");
-  dado1 = tirarDado(dado());
-  //printf("%d\n", dado1);
-  printf("Dado 2:\n");
-  dado2 = tirarDado(dado());
-  //printf("%d\n", dado2);
-  printf("Escoge numero de dado\n");
-  scanf("%d", &numDado);
-  printTablero(q);
-  q = mueveFicha(q, posIni, (numDado==1)?dado1:dado2, turno);
-  printTablero(q);*/
+  printInstrucciones();
+//miNota: no esta implementado que los dados den lo mismo
 
-//no esta implementado que los dados den lo mismo
+
   while(valGanador(fichasTerminadasPositivas,fichasTerminadasNegativas)){
 
     turno = turnos%2;
-    printf("\n\t////////////////////////////\tTURNO: ");
+    printf("\n////////////////////////////\tTURNO: ");
     printf(turno?"Negativas":"Positivas");
     printf("\t////////////////////////////\n");
-    printf("\n Tiene %d fichas capturadas\n\n",turno?capturadaNegativa:capturadaPositiva);
+    printf("\n\t%d Fichas capturadas\t%d Fichas Terminadas\n\n",turno?capturadaNegativa:capturadaPositiva,turno?fichasTerminadasNegativas:fichasTerminadasPositivas);
     printTablero(q);
     printf("Dado 1:\n");
     dado1 = tirarDado(dado());
-    usleep(1000000);
+    //usleep(1000000);
     printf("Dado 2:\n");
     dado2 = tirarDado(dado());
 
-    aux=-1;
-    numDado=-1;
-    for (int i = 0; i < 2; i++) {
+    aux=0;
+    numDado=0;
+    for (int i = 0; i < 2; i++) {//for de 2 para dos tiros
       int tiroDisponible = 1;
       aux=numDado;
+      if (!valGanador(fichasTerminadasPositivas,fichasTerminadasNegativas)) {
+        continue;
+      }
       do {
 
         if (hayCapturadas(turno,capturadaNegativa,capturadaPositiva)) {
@@ -92,11 +86,11 @@ int main(int argc, char const *argv[]) {
               q = mueveFicha(q, posIni, dadoF, turno);
               printf("/////Ficha Capturada/////\n");
               turno?capturadaPositiva++:capturadaNegativa++;
-              //printf("capturadaPositiva: %d\n", capturadaPositiva);
-              //printf("capturadaNegativa: %d\n", capturadaNegativa);
             break;
             case 3:
               q = mueveFichaTerminada(q, posIni, turno);
+              turno?fichasTerminadasNegativas--:fichasTerminadasPositivas++;
+              printf("/////Tiene %d fichas que han terminado/////\n", turno?fichasTerminadasNegativas:fichasTerminadasPositivas);
             break;
             default:
               printf("**No se pudo completar el tiro**\n");
@@ -120,33 +114,16 @@ int main(int argc, char const *argv[]) {
           printf("/////Tiro Omitido/////\n");
         }
 
-
       }while(tiroDisponible==0);
 
-      /*if (turno) //negativos
-        if (capturadaNegativa)
-          capturadaNegativa--;
-      else//positivos
-        if (capturadaPositiva)
-          capturadaPositiva--;*/
-
-
-
-
-
       printTablero(q);
-
     }
-
-
-
-    usleep(100000);
-
-
 
     turnos++;
   }
-
+  printf("\n\t////////////////////////////\t HA GANADO: ");
+  printf(turno?"NEGATIVAS":"POSITIVAS");
+  printf("\t////////////////////////////\n");
 
 
 
@@ -196,6 +173,7 @@ void printTablero(Tablero q){
   for (int i = 0; i < 12; i++) {
     rotaIzq(q);
   }
+  printf("\t");
   for (int i = 0; i < 12; i++) {
     rotaDer(q);
     if (izquierdo(q)>=0) {
@@ -204,7 +182,7 @@ void printTablero(Tablero q){
       printf("|  %d   |", izquierdo(q));
     }
   }
-  printf("\n");
+  printf("\n\t");
   for (int i = 0; i < 12; i++) {
     rotaIzq(q);
   }
@@ -227,7 +205,7 @@ Elem tirarDado(Circular c){
 		ImpElemDado(top(c));
 		c =rotar(c);
 		fflush(stdout);
-		//usleep((5*i*i)/(altr*altr)*100000);
+		usleep((5*i*i)/(altr*altr)*80000);
 		printf("  \r ");
 	}
 	ImpElemDado(top(c));
@@ -244,7 +222,6 @@ Circular dado(){
 }
 
 Tablero mueveFicha(Tablero q, int posIni, int dado, int turno){
-  printf("dado %d\n", dado);
   if (turno) {//negativos
     if (posIni) {
       for (int i = 1; i < posIni; i++)
@@ -350,6 +327,8 @@ int valPosFin(Tablero q, int posIni, int dado, int turno,int fichasTerminadas){
         else
           flag=1;
 
+      }else{
+        printf("**Hay mas de una ficha contraria en la posicion final**\n");
       }
       for (int i = 1; i < movimientoT; i++)
         rotaDer(q);
@@ -362,6 +341,8 @@ int valPosFin(Tablero q, int posIni, int dado, int turno,int fichasTerminadas){
           flag=2;//posible ficha negativa atrapada
         else
           flag=1;
+      }else{
+        printf("**Hay mas de una ficha contraria en la posicion final**\n");
       }
       for (int i = 1; i < movimientoT; i++)
         rotaIzq(q);
@@ -404,12 +385,7 @@ int valCuadrante(Tablero q, int turno, int fichasTerminadas){
 }
 
 int valGanador(int fichasTerminadasPositivas,int fichasTerminadasNegativas){
-  if (fichasTerminadasPositivas==15) {
-    printf("Ha ganado positivas\n");
-    return 0;
-  }
-  if (fichasTerminadasNegativas==-15) {
-    printf("Ha ganado negativas\n");
+  if (fichasTerminadasPositivas==15||fichasTerminadasNegativas==-15) {
     return 0;
   }
   return 1;
@@ -455,6 +431,14 @@ int escogeDado(int numDado,int dado1,int dado2){
 
 }
 
-int hacerTiro(){
+void printInstrucciones(){
+  printf("\n////////////////////////////\tINSTRUCCIONES\t////////////////////////////\n");
+  printf(" Para hacer un movimiento se necesita la posicion de la ficha que se quiere mover y \n el numero del dado que quiere aplicar (cada dado solo se puede usar una vez).\n");
+  printf("\n\tPosiciones de tablero fichas NEGATIVAS\n" );
+  printf("\t|   12   ||   11   ||   10   ||    9   ||    8   ||    7   ||    6   ||    5   ||    4   ||    3   ||    2   ||    1   |\n");
+  printf("\t|   13   ||   14   ||   15   ||   16   ||   17   ||   18   ||   19   ||   20   ||   21   ||   22   ||   23   ||   24   |\n");
 
+  printf("\n\tPosiciones de tablero fichas POSITIVAS\n" );
+  printf("\t|   13   ||   14   ||   15   ||   16   ||   17   ||   18   ||   19   ||   20   ||   21   ||   22   ||   23   ||   24   |\n");
+  printf("\t|   12   ||   11   ||   10   ||    9   ||    8   ||    7   ||    6   ||    5   ||    4   ||    3   ||    2   ||    1   |\n");
 }
