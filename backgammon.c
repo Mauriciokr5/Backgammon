@@ -56,11 +56,9 @@ int main(int argc, char const *argv[]) {
     printTablero(q);
     printf("Dado 1:\n");
     dado1 = tirarDado(dado());
-    //printf("%d\n", dado1);
     usleep(1000000);
     printf("Dado 2:\n");
     dado2 = tirarDado(dado());
-    //printf("%d\n", dado2);
 
     aux=-1;
     numDado=-1;
@@ -92,10 +90,10 @@ int main(int argc, char const *argv[]) {
             break;
             case 2:
               q = mueveFicha(q, posIni, dadoF, turno);
-              printf("Capturado\n");
+              printf("/////Ficha Capturada/////\n");
               turno?capturadaPositiva++:capturadaNegativa++;
-              printf("capturadaPositiva: %d\n", capturadaPositiva);
-              printf("capturadaNegativa: %d\n", capturadaNegativa);
+              //printf("capturadaPositiva: %d\n", capturadaPositiva);
+              //printf("capturadaNegativa: %d\n", capturadaNegativa);
             break;
             case 3:
               q = mueveFichaTerminada(q, posIni, turno);
@@ -104,12 +102,19 @@ int main(int argc, char const *argv[]) {
               printf("**No se pudo completar el tiro**\n");
           }
           if (tiroDisponible) {
-            if (turno) //negativos
-              if (capturadaNegativa)
+            if (turno){ //negativos
+              if (capturadaNegativa){
                 capturadaNegativa--;
-            else//positivos
-              if (capturadaPositiva)
+                printf("/////-1 Capturada/////N\n");
+              }
+
+            }else{//positivos
+              if (capturadaPositiva){
                 capturadaPositiva--;
+                printf("/////-1 Capturada/////P\n");
+              }
+
+            }
           }
         }else{
           printf("/////Tiro Omitido/////\n");
@@ -425,10 +430,14 @@ int hayCapturadas(int turno, int capturadaNegativa, int capturadaPositiva){
 
 int valDado(int numDado,int aux){
   if (numDado<3&&numDado>=0) {
-    if (numDado!=aux)
+    if (numDado!=aux){
       return 0;
-    else
+    }else{
+      if (numDado==0&&aux==0)
+        return 0;
       printf("**No se puede usar el mismo numero de dado 2 veces**\n");
+    }
+
 
   }else
     printf("**Solo se puede escoger 1 o 2   [0 para omitir tiro]**\n");
