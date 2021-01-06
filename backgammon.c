@@ -22,6 +22,7 @@ int valCuadrante(Tablero q, int turno, int fichasTerminadas);
 int valGanador(int fichasTerminadasPositivas,int fichasTerminadasNegativas);
 int hayCapturadas(int turno, int capturadaNegativa, int capturadaPositiva);
 int valDado(int numDado,int aux);
+int escogeDado(int numDado,int dado1,int dado2);
 
 
 
@@ -31,7 +32,18 @@ int main(int argc, char const *argv[]) {
   int turno, turnos = 0;//par=positivas impar=negativas
   int fichasTerminadasPositivas = 0, fichasTerminadasNegativas = 0;
   int dados[2];
-  int dado1, dado2, posIni, numDado=0;
+  int dado1, dado2, posIni, numDado,aux,dadoF;
+  /*printf("Dado 1:\n");
+  dado1 = tirarDado(dado());
+  //printf("%d\n", dado1);
+  printf("Dado 2:\n");
+  dado2 = tirarDado(dado());
+  //printf("%d\n", dado2);
+  printf("Escoge numero de dado\n");
+  scanf("%d", &numDado);
+  printTablero(q);
+  q = mueveFicha(q, posIni, (numDado==1)?dado1:dado2, turno);
+  printTablero(q);*/
 
 //no esta implementado que los dados den lo mismo
   while(valGanador(fichasTerminadasPositivas,fichasTerminadasNegativas)){
@@ -45,11 +57,13 @@ int main(int argc, char const *argv[]) {
     printf("Dado 1:\n");
     dado1 = tirarDado(dado());
     //printf("%d\n", dado1);
+    usleep(1000000);
     printf("Dado 2:\n");
     dado2 = tirarDado(dado());
     //printf("%d\n", dado2);
 
-    int aux=0;
+    aux=-1;
+    numDado=-1;
     for (int i = 0; i < 2; i++) {
       int tiroDisponible = 1;
       aux=numDado;
@@ -70,28 +84,46 @@ int main(int argc, char const *argv[]) {
           scanf("%d", &numDado);
         }while(valDado(numDado,aux));
 
-
-        switch (tiroDisponible=valPosFin(q, posIni, (numDado==1)?dado1:dado2, turno, turno?fichasTerminadasNegativas:fichasTerminadasPositivas)) {
-          case 1:
-            q = mueveFicha(q, posIni, dado1, turno);
-          break;
-          case 2:
-            q = mueveFicha(q, posIni, (numDado==1)?dado1:dado2, turno);
-            turno?capturadaPositiva++:capturadaNegativa++;
-          break;
-          case 3:
-            q = mueveFichaTerminada(q, posIni, turno);
-          break;
-          default:
-            printf("**No se pudo completar el tiro**\n");
+        dadoF = escogeDado(numDado,dado1,dado2);
+        if (dadoF) {//Opcion Omitir tiro
+          switch (tiroDisponible=valPosFin(q, posIni, dadoF, turno, turno?fichasTerminadasNegativas:fichasTerminadasPositivas)) {
+            case 1:
+              q = mueveFicha(q, posIni, dadoF, turno);
+            break;
+            case 2:
+              q = mueveFicha(q, posIni, dadoF, turno);
+              printf("Capturado\n");
+              turno?capturadaPositiva++:capturadaNegativa++;
+              printf("capturadaPositiva: %d\n", capturadaPositiva);
+              printf("capturadaNegativa: %d\n", capturadaNegativa);
+            break;
+            case 3:
+              q = mueveFichaTerminada(q, posIni, turno);
+            break;
+            default:
+              printf("**No se pudo completar el tiro**\n");
+          }
+          if (tiroDisponible) {
+            if (turno) //negativos
+              if (capturadaNegativa)
+                capturadaNegativa--;
+            else//positivos
+              if (capturadaPositiva)
+                capturadaPositiva--;
+          }
+        }else{
+          printf("/////Tiro Omitido/////\n");
         }
+
+
       }while(tiroDisponible==0);
-      if (turno) //negativos
+
+      /*if (turno) //negativos
         if (capturadaNegativa)
           capturadaNegativa--;
       else//positivos
         if (capturadaPositiva)
-          capturadaPositiva--;
+          capturadaPositiva--;*/
 
 
 
@@ -190,7 +222,7 @@ Elem tirarDado(Circular c){
 		ImpElemDado(top(c));
 		c =rotar(c);
 		fflush(stdout);
-		usleep((5*i*i)/(altr*altr)*100000);
+		//usleep((5*i*i)/(altr*altr)*100000);
 		printf("  \r ");
 	}
 	ImpElemDado(top(c));
@@ -209,29 +241,53 @@ Circular dado(){
 Tablero mueveFicha(Tablero q, int posIni, int dado, int turno){
   printf("dado %d\n", dado);
   if (turno) {//negativos
-    for (int i = 1; i < posIni; i++)
-      q = rotaIzq(q);
-    q = formarI(desformarI(q),izquierdo(q)+1);
-    for (int i = 0; i < dado; i++)
-      q = rotaIzq(q);
-    if (izquierdo(q)==1)
-      q = formarI(desformarI(q),izquierdo(q)-2);
-    else
-      q = formarI(desformarI(q),izquierdo(q)-1);
-    for (int i = 1; i < posIni+dado; i++)
-      q = rotaDer(q);
+    if (posIni) {
+      for (int i = 1; i < posIni; i++)
+        q = rotaIzq(q);
+      q = formarI(desformarI(q),izquierdo(q)+1);
+      for (int i = 0; i < dado; i++)
+        q = rotaIzq(q);
+      if (izquierdo(q)==1)
+        q = formarI(desformarI(q),izquierdo(q)-2);
+      else
+        q = formarI(desformarI(q),izquierdo(q)-1);
+      for (int i = 1; i < posIni+dado; i++)
+        q = rotaDer(q);
+    }else{
+      for (int i = 1; i < dado; i++)
+        q = rotaIzq(q);
+      if (izquierdo(q)==1)
+        q = formarI(desformarI(q),izquierdo(q)-2);
+      else
+        q = formarI(desformarI(q),izquierdo(q)-1);
+      for (int i = 1; i < dado; i++)
+        q = rotaDer(q);
+    }
+
   }else{//positivas
-    for (int i = 1; i < posIni; i++)
-      q = rotaDer(q);
-    q = formarD(desformarD(q),derecho(q)-1);
-    for (int i = 0; i < dado; i++)
-      q = rotaDer(q);
-    if (derecho(q)==-1)
-      q = formarD(desformarD(q),derecho(q)+2);
-    else
-      q = formarD(desformarD(q),derecho(q)+1);
-    for (int i = 1; i < posIni+dado; i++)
-      q = rotaIzq(q);
+    if (posIni) {
+      for (int i = 1; i < posIni; i++)
+        q = rotaDer(q);
+      q = formarD(desformarD(q),derecho(q)-1);
+      for (int i = 0; i < dado; i++)
+        q = rotaDer(q);
+      if (derecho(q)==-1)
+        q = formarD(desformarD(q),derecho(q)+2);
+      else
+        q = formarD(desformarD(q),derecho(q)+1);
+      for (int i = 1; i < posIni+dado; i++)
+        q = rotaIzq(q);
+    }else{
+      for (int i = 1; i < dado; i++)
+        q = rotaDer(q);
+      if (derecho(q)==-1)
+        q = formarD(desformarD(q),derecho(q)+2);
+      else
+        q = formarD(desformarD(q),derecho(q)+1);
+      for (int i = 1; i < dado; i++)
+        q = rotaIzq(q);
+    }
+
   }
 
   return q;
@@ -368,15 +424,26 @@ int hayCapturadas(int turno, int capturadaNegativa, int capturadaPositiva){
 }
 
 int valDado(int numDado,int aux){
-  if (numDado<3&&numDado>0) {
+  if (numDado<3&&numDado>=0) {
     if (numDado!=aux)
       return 0;
     else
       printf("**No se puede usar el mismo numero de dado 2 veces**\n");
 
   }else
-    printf("**Solo se puede escoger 1 o 2**\n");
+    printf("**Solo se puede escoger 1 o 2   [0 para omitir tiro]**\n");
   return 1;
+}
+
+int escogeDado(int numDado,int dado1,int dado2){
+  if (numDado) {
+    if (numDado==1)
+      return dado1;
+    else
+      return dado2;
+  }else
+    return 0;
+
 }
 
 int hacerTiro(){
